@@ -9,6 +9,12 @@ function App() {
   const [form, setForm] = useState(initial);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [sgpa, setSgpa] = useState(8.2);
+  const [previousCgpa, setPreviousCgpa] = useState(7.9);
+  const [semesters, setSemesters] = useState(6);
+
+  const cgpa = Math.min(10, Math.max(0, ((previousCgpa * Math.max(semesters - 1, 0)) + sgpa) / semesters)).toFixed(2);
+  const percentage = (Number(cgpa) * 9.5).toFixed(1);
 
   const update = (e) => setForm({...form, [e.target.name]: Number(e.target.value)});
 
@@ -88,6 +94,23 @@ function App() {
           </div> : <div className="empty"><div className="empty-art"><span>✦</span><span>◒</ span><span>↗</span></div><h3>Your outlook is waiting</h3><p>Complete the profile on the left to reveal an estimated SGPA and academic risk level.</p></div>}
         </section>
       </div>
+
+      <section className="utility-section">
+        <div className="utility-heading">
+          <div><p className="section-kicker">QUICK ACADEMIC TOOL</p><h2>Translate your score</h2></div>
+          <span className="tool-tag">SGPA → CGPA</span>
+        </div>
+        <div className="converter">
+          <div className="converter-copy">
+            <span className="converter-icon">↗</span>
+            <div><h3>SGPA to CGPA converter</h3><p>Estimate your cumulative grade point from your current semester score.</p></div>
+          </div>
+          <label className="converter-field"><span>Previous CGPA</span><input type="number" min="0" max="10" step="0.1" value={previousCgpa} onChange={(e) => setPreviousCgpa(Number(e.target.value))} /></label>
+          <label className="converter-field"><span>Current SGPA</span><input type="number" min="0" max="10" step="0.1" value={sgpa} onChange={(e) => setSgpa(Number(e.target.value))} /></label>
+          <label className="converter-field"><span>Semesters completed</span><input type="number" min="1" max="12" step="1" value={semesters} onChange={(e) => setSemesters(Number(e.target.value))} /></label>
+          <div className="converter-result"><small>Estimated CGPA</small><strong>{cgpa}</strong><span>≈ {percentage}%</span></div>
+        </div>
+      </section>
     </main>
     <footer><span>StudentPulse</span><span>React · Express · Python ML</span><span>Built for better decisions.</span></footer>
   </div>
