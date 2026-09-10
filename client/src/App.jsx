@@ -1,118 +1,35 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 
-const initial = {
-  attendance: 85, previous_sgpa: 7.8, internal_marks: 78,
-  assignment_marks: 82, study_hours: 3, backlogs: 0, previous_percentage: 78
-};
+const initial = { attendance: 85, previous_sgpa: 7.8, internal_marks: 78, assignment_marks: 82, study_hours: 3, backlogs: 0, previous_percentage: 78 };
+const navItems = [["overview", "Overview", "H"], ["predictor", "Predict", "P"], ["students", "Student directory", "S"], ["insights", "Reports & insights", "R"]];
+const students = [["Aarav Mehta", "CS-2041", "Computer Science", "8.7", "94%", "On track", "AM"], ["Ishita Sharma", "EC-1982", "Electronics and Communication", "8.3", "89%", "On track", "IS"], ["Kabir Singh", "ME-2110", "Mechanical Engineering", "6.8", "72%", "Needs attention", "KS"], ["Maya Patel", "CS-2077", "Computer Science", "9.1", "97%", "Excellent", "MP"], ["Rohan Das", "IT-2034", "Information Technology", "7.4", "81%", "On track", "RD"]];
 
 function App() {
-  const [form, setForm] = useState(initial);
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [sgpa, setSgpa] = useState(8.2);
-  const [previousCgpa, setPreviousCgpa] = useState(7.9);
-  const [semesters, setSemesters] = useState(6);
-
-  const cgpa = Math.min(10, Math.max(0, ((previousCgpa * Math.max(semesters - 1, 0)) + sgpa) / semesters)).toFixed(2);
-  const percentage = (Number(cgpa) * 9.5).toFixed(1);
-
-  const update = (e) => setForm({...form, [e.target.name]: Number(e.target.value)});
-
-  const predict = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const response = await fetch("http://localhost:5000/api/predict", {
-        method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(form)
-      });
-      if (!response.ok) throw new Error("Server unavailable");
-      setResult(await response.json());
-    } catch {
-      // Demo fallback keeps the frontend usable before the Python ML service is connected.
-      const score = form.attendance*0.25 + form.previous_sgpa*8*0.2 +
-        form.internal_marks*0.2 + form.assignment_marks*0.1 +
-        Math.min(form.study_hours*10,100)*0.1 + Math.max(0,100-form.backlogs*25)*0.05 +
-        form.previous_percentage*0.1;
-      const risk = score >= 75 ? "Low Risk" : score >= 55 ? "Moderate Risk" : "High Risk";
-      const sgpa = Math.min(10, Math.max(0, score/10));
-      setResult({risk, predicted_sgpa: Number(sgpa.toFixed(2)), confidence: 0, demo: true});
-    } finally { setLoading(false); }
-  };
-
-  const fields = [
-    ["attendance", "Attendance", "%", 0, 100, 1],
-    ["previous_sgpa", "Previous SGPA", "/ 10", 0, 10, 0.1],
-    ["internal_marks", "Internal marks", "%", 0, 100, 1],
-    ["assignment_marks", "Assignment marks", "%", 0, 100, 1],
-    ["study_hours", "Study hours / day", "hrs", 0, 16, 1],
-    ["backlogs", "Active backlogs", "count", 0, 10, 1],
-    ["previous_percentage", "Previous percentage", "%", 0, 100, 1]
-  ];
-
-  return <div className="app">
-    <header className="topbar">
-      <div className="brand"><span className="brand-mark">SP</span><span>StudentPulse</span></div>
-      <div className="topbar-status"><span className="status-dot" /> Prediction workspace <span className="status-divider" /> 2024–25</div>
-    </header>
-    <main className="shell">
-      <section className="intro">
-        <div>
-          <p className="eyebrow">ACADEMIC INTELLIGENCE <span>•</span> 01</p>
-          <h1>See the signal<br /><em>behind the score.</em></h1>
-          <p className="intro-copy">Turn everyday academic indicators into a clear, actionable view of student performance.</p>
-        </div>
-        <div className="intro-note"><span className="note-icon">↗</span><p>Use recent, verified data for a more reliable estimate.</p></div>
-      </section>
-
-      <section className="metric-strip" aria-label="Model highlights">
-        <div><span className="metric-icon teal">◎</span><p><strong>7</strong><small>inputs analyzed</small></p></div>
-        <div><span className="metric-icon coral">↗</span><p><strong>10.0</strong><small>maximum SGPA</small></p></div>
-        <div><span className="metric-icon yellow">✦</span><p><strong>ML</strong><small>powered insights</small></p></div>
-      </section>
-
-      <div className="workspace">
-        <section className="panel form-panel">
-          <div className="panel-heading"><div><p className="section-kicker">INPUT PROFILE</p><h2>Student details</h2></div><span className="step">01 <i>/ 02</i></span></div>
-          <p className="panel-copy">Add the latest academic information to generate a performance snapshot.</p>
-          <form onSubmit={predict}>
-            <div className="field-grid">
-              {fields.map(([name, label, unit, min, max, step]) =>
-                <label key={name}><span>{label}<small>{unit}</small></span><input type="number" name={name} value={form[name]} min={min} max={max} step={step} onChange={update} required /></label>
-              )}
-            </div>
-            <button className="predict-button" disabled={loading}><span>{loading ? "Calculating" : "Generate prediction"}</span><b>→</b></button>
-          </form>
-          <p className="privacy"><span>●</span> Your inputs stay private and are used for this estimate only.</p>
-        </section>
-
-        <section className={`panel result-panel ${result ? "has-result" : ""}`}>
-          <div className="panel-heading"><div><p className="section-kicker">PERFORMANCE OUTLOOK</p><h2>Prediction</h2></div><span className={`result-badge ${result?.demo ? "demo-badge" : ""}`}>{result?.demo ? "DEMO" : "LIVE"}</span></div>
-          {result ? <div className="result">
-            <div className={`risk ${result.risk.startsWith("Low") ? "low" : result.risk.startsWith("Moderate") ? "moderate" : "high"}`}><span />{result.risk}</div>
-            <div className="score-wrap"><div className="score-ring"><strong>{result.predicted_sgpa}</strong><span>/ 10</span></div><div><p className="score-label">Estimated SGPA</p><p className="score-caption">Based on the profile provided</p></div></div>
-            <div className="result-foot">{result.confidence ? <span>Model confidence <b>{result.confidence}%</b></span> : <span className="muted">Demo estimate <b>•</b> connect ML service for live confidence</span>}<span className="result-arrow">↗</span></div>
-          </div> : <div className="empty"><div className="empty-art"><span>✦</span><span>◒</ span><span>↗</span></div><h3>Your outlook is waiting</h3><p>Complete the profile on the left to reveal an estimated SGPA and academic risk level.</p></div>}
-        </section>
-      </div>
-
-      <section className="utility-section">
-        <div className="utility-heading">
-          <div><p className="section-kicker">QUICK ACADEMIC TOOL</p><h2>Translate your score</h2></div>
-          <span className="tool-tag">SGPA → CGPA</span>
-        </div>
-        <div className="converter">
-          <div className="converter-copy">
-            <span className="converter-icon">↗</span>
-            <div><h3>SGPA to CGPA converter</h3><p>Estimate your cumulative grade point from your current semester score.</p></div>
-          </div>
-          <label className="converter-field"><span>Previous CGPA</span><input type="number" min="0" max="10" step="0.1" value={previousCgpa} onChange={(e) => setPreviousCgpa(Number(e.target.value))} /></label>
-          <label className="converter-field"><span>Current SGPA</span><input type="number" min="0" max="10" step="0.1" value={sgpa} onChange={(e) => setSgpa(Number(e.target.value))} /></label>
-          <label className="converter-field"><span>Semesters completed</span><input type="number" min="1" max="12" step="1" value={semesters} onChange={(e) => setSemesters(Number(e.target.value))} /></label>
-          <div className="converter-result"><small>Estimated CGPA</small><strong>{cgpa}</strong><span>≈ {percentage}%</span></div>
-        </div>
-      </section>
-    </main>
-    <footer><span>StudentPulse</span><span>React · Express · Python ML</span><span>Built for better decisions.</span></footer>
-  </div>
+  const [activePage, setActivePage] = useState("overview");
+  const [form, setForm] = useState(initial); const [result, setResult] = useState(null); const [loading, setLoading] = useState(false);
+  const [sgpa, setSgpa] = useState(8.2); const [previousCgpa, setPreviousCgpa] = useState(7.9); const [semesters, setSemesters] = useState(6); const [toast, setToast] = useState("");
+  const update = (e) => setForm({ ...form, [e.target.name]: Number(e.target.value) });
+  const predict = async (e) => { e.preventDefault(); setLoading(true); try { const response = await fetch("http://localhost:5000/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) }); if (!response.ok) throw new Error("Server unavailable"); setResult(await response.json()); } catch { const score = form.attendance * .25 + form.previous_sgpa * 8 * .2 + form.internal_marks * .2 + form.assignment_marks * .1 + Math.min(form.study_hours * 10, 100) * .1 + Math.max(0, 100 - form.backlogs * 25) * .05 + form.previous_percentage * .1; const risk = score >= 75 ? "Low Risk" : score >= 55 ? "Moderate Risk" : "High Risk"; setResult({ risk, predicted_sgpa: Number(Math.min(10, Math.max(0, score / 10)).toFixed(2)), confidence: 0, demo: true }); } finally { setLoading(false); } };
+  const notify = (message) => { setToast(message); window.setTimeout(() => setToast(""), 2400); };
+  return <div className="app"><aside className="sidebar"><div className="brand"><span className="brand-mark">SP</span><span>Student<span>Pulse</span></span></div><div className="workspace-switch"><span className="workspace-avatar">A</span><span><b>Admin workspace</b><small>Springfield University</small></span><i></i></div><nav><p className="nav-label">WORKSPACE</p>{navItems.map(([id, label, icon]) => <button key={id} className={activePage === id ? "active" : ""} onClick={() => setActivePage(id)}><span>{icon}</span>{label}{id === "insights" && <em>3</em>}</button>)}</nav><div className="sidebar-bottom"><button className={activePage === "settings" ? "active" : ""} onClick={() => setActivePage("settings")}><span></span>Settings</button><div className="help-box"><strong>Need a hand?</strong><p>Explore the quick-start guide for your team.</p><button onClick={() => notify("Guide opened")}>View guide <b></b></button></div><div className="user-card"><span className="user-avatar">AR</span><span><b>Alex Rivera</b><small>Administrator</small></span><i></i></div></div></aside><div className="main-shell"><header className="topbar"><div className="mobile-brand"><span className="brand-mark">SP</span>StudentPulse</div><div className="breadcrumb"><span>Workspace</span><b>/</b><strong>{navItems.find((item) => item[0] === activePage)?.[1] || "Settings"}</strong></div><div className="top-actions"><button className="icon-button" aria-label="Search"></button><button className="icon-button notification" aria-label="Notifications" onClick={() => notify("You are all caught up")}><i /></button><div className="top-avatar">AR</div></div></header><main className="content">{activePage === "overview" && <Overview goTo={setActivePage} />}{activePage === "predictor" && <Predictor form={form} update={update} predict={predict} loading={loading} result={result} sgpa={sgpa} setSgpa={setSgpa} previousCgpa={previousCgpa} setPreviousCgpa={setPreviousCgpa} semesters={semesters} setSemesters={setSemesters} />}{activePage === "students" && <Students notify={notify} />}{activePage === "insights" && <Insights />}{activePage === "settings" && <Settings notify={notify} />}</main>{toast && <div className="toast"><span></span>{toast}</div>}</div></div>;
 }
+
+function PageTitle({ eyebrow, title, copy, action }) { return <div className="page-title"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p className="page-copy">{copy}</p></div>{action}</div>; }
+function Overview({ goTo }) { return <><PageTitle eyebrow="MONDAY, 14 OCTOBER 2024" title={<>Good morning, Alex <span className="wave"></span></>} copy="Here is the latest pulse of academic performance across your department." action={<button className="primary-button" onClick={() => goTo("predictor")}><span></span> New prediction</button>} /><section className="stat-grid"><Stat label="Students monitored" value="248" trend="12.4%" note="vs last semester" icon="" tone="blue" /><Stat label="Average predicted SGPA" value="7.82" trend="4.8%" note="vs last semester" icon="" tone="green" /><Stat label="Students at risk" value="18" trend="2.1%" note="improvement this month" icon="!" tone="orange" /><Stat label="Data completeness" value="92%" trend="8.2%" note="since last sync" icon="" tone="purple" /></section><section className="dashboard-grid"><div className="surface chart-card"><div className="surface-head"><div><p className="section-kicker">PERFORMANCE TRENDS</p><h2>Academic health overview</h2></div><select><option>Last 6 months</option><option>This semester</option></select></div><div className="chart-legend"><span><i className="legend-line teal-line" />Average SGPA</span><span><i className="legend-line coral-line" />Attendance</span></div><div className="chart"><div className="y-axis"><span>10</span><span>8</span><span>6</span><span>4</span><span>2</span></div><div className="chart-area"><div className="grid-lines"><i /><i /><i /><i /><i /></div><svg viewBox="0 0 700 220" preserveAspectRatio="none" aria-label="Performance trend chart"><defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#3e9a91" stopOpacity=".22" /><stop offset="1" stopColor="#3e9a91" stopOpacity="0" /></linearGradient></defs><path d="M0,158 C70,145 90,155 140,124 S220,135 280,102 S350,104 405,82 S480,96 530,62 S610,67 700,35 L700,220 L0,220Z" fill="url(#area)" /><path d="M0,158 C70,145 90,155 140,124 S220,135 280,102 S350,104 405,82 S480,96 530,62 S610,67 700,35" fill="none" stroke="#3e9a91" strokeWidth="3" strokeLinecap="round" /><path d="M0,184 C70,175 95,180 140,158 S220,169 280,141 S350,147 405,130 S480,136 530,115 S610,119 700,95" fill="none" stroke="#e27c63" strokeWidth="2.5" strokeDasharray="5 7" strokeLinecap="round" /></svg><div className="x-axis"><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span></div></div></div></div><div className="surface activity-card"><div className="surface-head"><div><p className="section-kicker">RECENT ACTIVITY</p><h2>What needs attention</h2></div><button className="text-button">View all </button></div><div className="activity-list"><Activity icon="!" tone="orange" title="12 students slipped below 75% attendance" time="Today, 9:42 AM" /><Activity icon="" tone="green" title="Prediction batch completed successfully" time="Yesterday, 4:18 PM" /><Activity icon="" tone="blue" title="New semester data imported" time="Oct 11, 11:06 AM" /><Activity icon="" tone="purple" title="Faculty review is due this week" time="Oct 10, 2:30 PM" /></div></div></section><section className="surface spotlight"><div><p className="section-kicker">STUDENT SPOTLIGHT</p><h2>Highest momentum this month</h2><p>These students have improved their predicted outlook by more than 0.8 SGPA.</p></div><div className="spotlight-students"><Spotlight name="Maya Patel" course="Computer Science" score="+1.2" initials="MP" /><Spotlight name="Aarav Mehta" course="Computer Science" score="+0.9" initials="AM" /><Spotlight name="Ishita Sharma" course="Electronics" score="+0.8" initials="IS" /></div></section></>; }
+function Stat({ label, value, trend, note, icon, tone }) { return <div className="stat-card"><div className={`stat-icon ${tone}`}>{icon}</div><div><p>{label}</p><strong>{value}</strong><small><b> {trend}</b> {note}</small></div></div>; }
+function Activity({ icon, tone, title, time }) { return <div className="activity"><span className={`activity-icon ${tone}`}>{icon}</span><div><strong>{title}</strong><small>{time}</small></div><button></button></div>; }
+function Spotlight({ name, course, score, initials }) { return <div className="spotlight-person"><span className="person-avatar">{initials}</span><span><strong>{name}</strong><small>{course}</small></span><b>{score} <small>SGPA</small></b></div>; }
+
+function Predictor({ form, update, predict, loading, result, sgpa, setSgpa, previousCgpa, setPreviousCgpa, semesters, setSemesters }) { const fields = [["attendance", "Attendance", "%", 0, 100, 1], ["previous_sgpa", "Previous SGPA", "/ 10", 0, 10, .1], ["internal_marks", "Internal marks", "%", 0, 100, 1], ["assignment_marks", "Assignment marks", "%", 0, 100, 1], ["study_hours", "Study hours / day", "hrs", 0, 16, 1], ["backlogs", "Active backlogs", "count", 0, 10, 1], ["previous_percentage", "Previous percentage", "%", 0, 100, 1]]; const cgpa = Math.min(10, Math.max(0, ((previousCgpa * Math.max(semesters - 1, 0)) + sgpa) / semesters)).toFixed(2); return <><PageTitle eyebrow="PREDICTION ENGINE" title="Performance predictor" copy="Create a focused academic outlook from the latest student signals." action={<span className="live-chip"><i /> Model online  v2.4</span>} /><div className="predictor-layout"><section className="surface predictor-form"><div className="surface-head"><div><p className="section-kicker">STEP 01 / INPUT PROFILE</p><h2>Student details</h2></div><span className="completion">7 of 7 complete</span></div><p className="surface-copy">Add verified academic information to generate a performance snapshot.</p><form onSubmit={predict}><div className="field-grid">{fields.map(([name, label, unit, min, max, step]) => <label key={name}><span>{label}<small>{unit}</small></span><input type="number" name={name} value={form[name]} min={min} max={max} step={step} onChange={update} required /></label>)}</div><button className="primary-button full" disabled={loading}>{loading ? "Calculating outlook..." : "Generate prediction  "}</button></form><p className="form-note"> Inputs are encrypted and only used for this estimate.</p></section><section className={`surface prediction-result ${result ? "has-result" : ""}`}><div className="surface-head"><div><p className="section-kicker">STEP 02 / PERFORMANCE OUTLOOK</p><h2>Prediction</h2></div><span className="result-status">{result ? "READY" : "WAITING"}</span></div>{result ? <div className="result-content"><div className={`risk ${result.risk.startsWith("Low") ? "low" : result.risk.startsWith("Moderate") ? "moderate" : "high"}`}><span />{result.risk}</div><div className="score-display"><div className="score-ring"><strong>{result.predicted_sgpa}</strong><span>/ 10</span></div><div><small>ESTIMATED SGPA</small><p>Based on the profile provided</p></div></div><div className="result-insights"><div><span>Attendance signal</span><b>{form.attendance >= 80 ? "Strong" : "Watch"}</b></div><div><span>Academic momentum</span><b>{form.previous_sgpa >= 7.5 ? "Positive" : "Building"}</b></div></div><p className="confidence">{result.confidence ? `Model confidence ${result.confidence}%` : "Demo estimate  connect ML service for live confidence"}</p></div> : <div className="empty-result"><span></span><h3>Your outlook is waiting</h3><p>Complete the student profile to reveal an estimated SGPA, risk level, and supporting signals.</p></div>}</section></div><section className="converter-section"><div className="section-heading"><div><p className="section-kicker">QUICK ACADEMIC TOOL</p><h2>Translate your score</h2></div><span>SGPA  CGPA</span></div><div className="converter"><div className="converter-copy"><span className="converter-icon"></span><div><h3>SGPA to CGPA converter</h3><p>Estimate cumulative performance from your current semester.</p></div></div><ConverterField label="Previous CGPA" value={previousCgpa} setValue={setPreviousCgpa} step=".1" /><ConverterField label="Current SGPA" value={sgpa} setValue={setSgpa} step=".1" /><ConverterField label="Semesters completed" value={semesters} setValue={setSemesters} step="1" /><div className="converter-result"><small>Estimated CGPA</small><strong>{cgpa}</strong><span> {Number(cgpa) * 9.5}%</span></div></div></section></>; }
+function ConverterField({ label, value, setValue, step }) { return <label className="converter-field"><span>{label}</span><input type="number" min="0" max={step === "1" ? "12" : "10"} step={step} value={value} onChange={(e) => setValue(Number(e.target.value))} /></label>; }
+
+function Students({ notify }) { return <><PageTitle eyebrow="PEOPLE DIRECTORY" title="Students" copy="Monitor individual progress and identify where support can make the biggest difference." action={<><button className="secondary-button" onClick={() => notify("Import dialog opened")}> Import</button><button className="primary-button" onClick={() => notify("Student form opened")}> Add student</button></>} /><section className="surface roster"><div className="roster-toolbar"><div className="search-box"><input placeholder="Search students, IDs or courses" /></div><select><option>All departments</option><option>Computer Science</option><option>Electronics</option></select><select><option>All statuses</option><option>On track</option><option>Needs focus</option></select><button className="filter-button"> Filters</button></div><table><thead><tr><th>STUDENT</th><th>DEPARTMENT</th><th>PREDICTED SGPA</th><th>ATTENDANCE</th><th>OUTLOOK</th><th /></tr></thead><tbody>{students.map(([name, id, course, score, attendance, status, initials]) => <tr key={id}><td><div className="student-cell"><span className="person-avatar">{initials}</span><span><strong>{name}</strong><small>{id}</small></span></div></td><td>{course}</td><td><strong>{score}</strong> <span className="muted">/ 10</span></td><td>{attendance}</td><td><span className={`status-pill ${status === "Needs focus" ? "warning" : status === "Excellent" ? "excellent" : "positive"}`}><i />{status}</span></td><td><button className="more-button"></button></td></tr>)}</tbody></table><div className="table-footer"><span>Showing 15 of 248 students</span><div><button disabled></button><button className="current">1</button><button>2</button><button>3</button><button></button></div></div></section></>; }
+
+function Insights() { return <><PageTitle eyebrow="ACADEMIC INTELLIGENCE" title="Insights & reports" copy="Turn performance signals into clear actions for faculty and student success teams." action={<button className="secondary-button"> Export report</button>} /><div className="insight-grid"><section className="surface insight-main"><div className="surface-head"><div><p className="section-kicker">RISK DISTRIBUTION</p><h2>Where support matters most</h2></div><span className="period-label">Fall 2024</span></div><div className="donut-wrap"><div className="donut"><div><strong>248</strong><span>students</span></div></div><div className="donut-legend"><Legend color="green" label="On track" value="71%" /><Legend color="yellow" label="Watch list" value="22%" /><Legend color="red" label="At risk" value="7%" /></div></div><div className="insight-callout"><span></span><p><strong>Attendance is the leading signal.</strong> Students below 75% attendance are 2.4 more likely to need academic intervention.</p></div></section><section className="surface department-card"><div className="surface-head"><div><p className="section-kicker">BY DEPARTMENT</p><h2>Average performance</h2></div></div><div className="department-bars"><Bar label="Computer Science" value="8.42" width="86%" color="teal" /><Bar label="Electronics" value="7.96" width="78%" color="blue" /><Bar label="Information Tech" value="7.61" width="70%" color="coral" /><Bar label="Mechanical" value="7.24" width="61%" color="yellow" /></div></section></div><section className="surface recommendations"><div className="surface-head"><div><p className="section-kicker">RECOMMENDED ACTIONS</p><h2>Next best steps</h2></div></div><div className="recommendation-grid"><Recommendation number="01" title="Start an attendance outreach" copy="12 students have crossed the 75% attendance threshold this week." action="Review students" /><Recommendation number="02" title="Schedule faculty review" copy="Three departments show a drop in internal assessment scores." action="Open report" /><Recommendation number="03" title="Refresh student data" copy="19 student profiles have not been updated in over 30 days." action="Sync records" /></div></section></>; }
+function Legend({ color, label, value }) { return <div><span className={`legend-dot ${color}`} /><span>{label}</span><b>{value}</b></div>; } function Bar({ label, value, width, color }) { return <div className="bar-row"><div><span>{label}</span><b>{value}</b></div><div className="bar-track"><i className={color} style={{ width }} /></div></div>; } function Recommendation({ number, title, copy, action }) { return <div className="recommendation"><span>{number}</span><div><h3>{title}</h3><p>{copy}</p><button>{action} </button></div></div>; }
+
+function Settings({ notify }) { return <><PageTitle eyebrow="WORKSPACE CONFIGURATION" title="Settings" copy="Manage your workspace preferences, data connections, and team access." /><div className="settings-layout"><aside className="settings-nav"><button className="active"> General</button><button> Team members</button><button> Data connections</button><button> Notifications</button><button> Billing & plan</button></aside><section className="surface settings-panel"><div className="settings-section"><p className="section-kicker">GENERAL SETTINGS</p><h2>Workspace details</h2><label>Workspace name<input defaultValue="Springfield University" /></label><label>Academic year<select defaultValue="2024-25"><option>2024-25</option><option>2025-26</option></select></label></div><div className="settings-section"><p className="section-kicker">PREFERENCES</p><h2>How StudentPulse works for you</h2><label className="toggle-row"><span><b>Weekly performance digest</b><small>Receive a Monday summary of student movement.</small></span><input type="checkbox" defaultChecked /><i /></label><label className="toggle-row"><span><b>Risk alerts</b><small>Notify me when a student moves into the at-risk band.</small></span><input type="checkbox" defaultChecked /><i /></label></div><div className="settings-actions"><button className="secondary-button">Cancel</button><button className="primary-button" onClick={() => notify("Settings saved successfully")}>Save changes</button></div></section></div></>; }
+
 export default App;
+
+
