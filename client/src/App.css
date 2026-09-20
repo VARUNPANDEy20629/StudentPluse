@@ -1,4 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+.surface,.stat-card,.roster,.settings-nav,.settings-panel{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.surface:hover,.stat-card:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(30,61,75,.1);border-color:#c5ded8}
+.stat-card:hover .stat-icon{transform:scale(1.08) rotate(-3deg)}
+.stat-icon{transition:transform .22s ease}
+.roster tbody tr{transition:background-color .18s ease,transform .18s ease}
+.roster tbody tr:hover{background:#f1f9f6;transform:translateX(3px)}
+.roster tbody tr:hover .person-avatar{box-shadow:0 0 0 4px #dcefe9}
+.person-avatar{transition:box-shadow .18s ease}
+.spotlight-person{transition:background-color .18s ease,transform .18s ease,box-shadow .18s ease}
+.spotlight-person:hover{background:#f1f9f6;transform:translateY(-2px);box-shadow:0 8px 18px rgba(30,61,75,.07)}
+.settings-nav button{transition:background-color .18s ease,color .18s ease,transform .18s ease}
+.settings-nav button:hover{background:#eef8f5;color:var(--teal-dark);transform:translateX(3px)}
+.member-row,.connection-row,.recommendation{transition:background-color .18s ease,transform .18s ease;padding-left:8px;padding-right:8px;border-radius:7px}
+.member-row:hover,.connection-row:hover,.recommendation:hover{background:#f5fbf9;transform:translateX(3px)}
+.field-grid input,.roster-toolbar input,.roster-toolbar select,.settings-panel select{transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease}
+.field-grid input:focus,.roster-toolbar input:focus,.roster-toolbar select:focus,.settings-panel select:focus{border-color:var(--teal);background:#fff;box-shadow:0 0 0 4px rgba(39,125,120,.11);outline:0}
+.primary-button:active,.secondary-button:active,.filter-button:active,.icon-button:active{transform:translateY(1px) scale(.98)}
+.icon-button:hover{background:#eef8f5;box-shadow:0 5px 14px rgba(30,61,75,.08)}
+.more-button:hover,.activity>button:hover{background-color:#dceee9}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
 /* Interaction overrides */
 .sidebar{background:#eef6f3;border-right-color:#d8e7e2}
 .sidebar nav button:hover,.sidebar-bottom>button:hover{background:#dceee9;color:var(--teal-dark)}
