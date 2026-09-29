@@ -71,22 +71,186 @@ function LoginPage({ onLogin }) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+
   const submit = (event) => {
     event.preventDefault();
-    if (!email.trim() || !password.trim()) { setError("Enter your email and password to continue."); return; }
+    if (!email.trim() || !password.trim()) {
+      setError("Enter your email and password to continue.");
+      return;
+    }
     onLogin({ name: "Varun Pandey", email: email.trim() });
   };
-  const googleLogin = () => onLogin({ name: "Varun Pandey", email: "varun@springfield.edu", provider: "google" });
-  return <div className="login-page"><div className="login-panel"><div className="login-brand"><span className="brand-mark">SP</span><span>Student<span>Pulse</span></span></div><div className="login-copy"><p className="eyebrow">WELCOME BACK</p><h1>Make every student count.</h1><p>Sign in to your academic workspace and keep a clear pulse on student performance.</p></div><div className="login-card"><div className="login-card-heading"><span className="login-badge">SP</span><div><h2>Sign in to StudentPulse</h2><p>Access your university workspace</p></div></div><button className="google-button" type="button" onClick={googleLogin}><span className="google-g">G</span>Continue with Google</button><div className="login-divider"><span>or sign in with email</span></div><form onSubmit={submit}><label>Email address<input type="email" placeholder="you@university.edu" value={email} onChange={(event) => { setEmail(event.target.value); setError(""); }} required /></label><label>Password<span className="password-input"><input type={showPassword ? "text" : "password"} placeholder="Enter your password" value={password} onChange={(event) => { setPassword(event.target.value); setError(""); }} required /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "Show"}</button></span></label><div className="login-options"><label className="remember-option"><input type="checkbox" /> <span>Remember me</span></label><button type="button" className="forgot-button" onClick={() => setError("Password reset is available through your university administrator.")}>Forgot password?</button></div>{error && <p className="login-error" role="alert">{error}</p>}<button className="primary-button login-submit" type="submit">Sign in <span>→</span></button></form><p className="login-help">New to StudentPulse? <button type="button" onClick={() => setError("Ask your workspace administrator for an invitation.")}>Request access</button></p></div><p className="login-footer">Secure workspace access <span>•</span> Built for student success teams</p></div><div className="login-art" aria-hidden="true"><div className="art-grid"></div><div className="art-copy"><span>STUDENT SUCCESS / 2026</span><strong>Clarity for every<br />academic decision.</strong></div><div className="art-orbit orbit-one"></div><div className="art-orbit orbit-two"></div><div className="art-chart"><span>AVERAGE SGPA</span><strong>8.42</strong><div><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div className="art-note"><b>↑ 12.4%</b><span>performance trend</span></div></div></div>;
+
+  const googleLogin = () => onLogin({
+    name: "Varun Pandey",
+    email: "varun@springfield.edu",
+    provider: "google",
+  });
+
+  return (
+    <div className="login-page">
+      <div className="login-panel">
+        <div className="login-brand">
+          <span className="brand-mark">SP</span>
+          <span>
+            Student<span>Pulse</span>
+          </span>
+        </div>
+
+        <div className="login-copy">
+          <p className="eyebrow">WELCOME BACK</p>
+          <h1>Turn campus data into student success.</h1>
+          <p>
+            Track performance, spot risk early, and support every learner with one
+            decision-ready workspace.
+          </p>
+        </div>
+
+        <div className="login-card">
+          <div className="login-card-heading">
+            <span className="login-badge">SP</span>
+            <div>
+              <h2>Sign in to StudentPulse</h2>
+              <p>Access your university workspace</p>
+            </div>
+          </div>
+
+          <button className="google-button" type="button" onClick={googleLogin}>
+            <span className="google-g">G</span>
+            Continue with Google
+          </button>
+
+          <div className="login-divider">
+            <span>or sign in with email</span>
+          </div>
+
+          <form onSubmit={submit}>
+            <label>
+              Email address
+              <input
+                type="email"
+                placeholder="you@university.edu"
+                value={email}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  setError("");
+                }}
+                required
+              />
+            </label>
+
+            <label>
+              Password
+              <span className="password-input">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    setError("");
+                  }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </span>
+            </label>
+
+            <div className="login-options">
+              <label className="remember-option">
+                <input type="checkbox" />
+                <span>Remember me</span>
+              </label>
+              <button
+                type="button"
+                className="forgot-button"
+                onClick={() => setError("Password reset is available through your university administrator.")}
+              >
+                Forgot password?
+              </button>
+            </div>
+
+            {error && (
+              <p className="login-error" role="alert">
+                {error}
+              </p>
+            )}
+
+            <button className="primary-button login-submit" type="submit">
+              Sign in <span>→</span>
+            </button>
+          </form>
+
+          <p className="login-help">
+            New to StudentPulse?
+            <button
+              type="button"
+              onClick={() => setError("Ask your workspace administrator for an invitation.")}
+            >
+              Request access
+            </button>
+          </p>
+        </div>
+      </div>
+
+      <aside className="login-art" aria-label="StudentPulse dashboard preview">
+        <div className="art-shell">
+          <div className="art-topbar">
+            <span className="mini-chip">Live overview</span>
+            <span className="mini-status">12 new alerts</span>
+          </div>
+
+          <div className="art-highlight">
+            <div>
+              <p>Students monitored</p>
+              <strong>248</strong>
+            </div>
+            <span>+12.4%</span>
+          </div>
+
+          <div className="art-metrics">
+            <div className="metric-card">
+              <small>Average SGPA</small>
+              <strong>8.41</strong>
+              <em>up 4.8%</em>
+            </div>
+            <div className="metric-card warm">
+              <small>At risk</small>
+              <strong>18</strong>
+              <em>reduced</em>
+            </div>
+          </div>
+
+          <div className="art-chart" role="img" aria-label="Academic performance trend">
+            <span className="chart-tag">Performance trend</span>
+            <div className="chart-bars">
+              <i style={{ height: '42%' }} />
+              <i style={{ height: '58%' }} />
+              <i style={{ height: '49%' }} />
+              <i style={{ height: '72%' }} />
+              <i style={{ height: '68%' }} />
+              <i style={{ height: '88%' }} />
+            </div>
+          </div>
+
+          <div className="art-foot">
+            <div>
+              <span>Intervention score</span>
+              <strong>92%</strong>
+            </div>
+            <div className="mini-progress">
+              <em style={{ width: '92%' }} />
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  );
 }
-
 export default App;
-
-
-
-
-
-
-
-
-
